@@ -287,7 +287,7 @@ function webviewTest(sender_psid){
               {
                 "type": "web_url",
                 "title": "webview",
-                "url":"https://fbstarterbot.herokuapp.com/webview/"+sender_psid,
+                "url":"https://myfoodiebot.herokuapp.com/webview/"+sender_psid,
                  "webview_height_ratio": "full",
                 "messenger_extensions": true,          
               },
