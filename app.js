@@ -554,7 +554,7 @@ FUNCTION TO ADD WHITELIST DOMAIN
 const whitelistDomains = (res) => {
   var messageData = {
           "whitelisted_domains": [
-             "https://fbstarterbot.herokuapp.com" , 
+             "https://myfoodiebot.herokuapp.com" , 
              "https://herokuapp.com"                           
           ]               
   };  
