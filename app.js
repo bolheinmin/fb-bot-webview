@@ -1,6 +1,8 @@
 'use strict';
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-const APP_URL = "https://myfoodiebot.herokuapp.com";
+const APP_URL = "https://dashboard.heroku.com/apps/myfoodiebot";
+
+//new text
 
 // Imports dependencies and set up http server
 const 
@@ -13,6 +15,13 @@ const
   multer  = require('multer'),  
   app = express(); 
 
+let bot_q = {
+  askPhone: false,
+  askHotel: false,
+  askRestaurent:false
+}
+
+let user_input = {};
   
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -93,7 +102,103 @@ app.post('/webhook', (req, res) => {
 });
 
 
-app.use('/uploads', express.static('uploads'))
+app.use('/uploads', express.static('uploads'));
+
+/*********************************************
+START Eye of Eagle
+**********************************************/
+
+app.get('/addpackage/:sender_id',function(req,res){
+    const sender_id = req.params.sender_id;
+    res.render('addpackage.ejs',{title:"Hello!! from WebView", sender_id:sender_id});
+});
+
+
+app.post('/addpackage',function(req,res){
+      
+      let image  = req.body.image;
+      let title = req.body.title;
+      let description = req.body.description;
+      let sender = req.body.sender;   
+
+      db.collection('package').add({
+            image: image,
+            title: title,
+            description: description
+          }).then(success => {             
+             ThankYouEagle(sender);    
+          }).catch(error => {
+            console.log(error);
+      });        
+});
+
+
+app.get('/booktour/:tour_package/:sender_id',function(req,res){
+    const tour_package = req.params.tour_package;
+    const sender_id = req.params.sender_id;
+    res.render('booktour.ejs',{title:"Book Tour Package", tour_package:tour_package, sender_id:sender_id});
+});
+
+
+app.post('/booktour',function(req,res){
+      let name  = req.body.name;
+      let mobile = req.body.mobile;
+      let tour_package = req.body.tour_package;
+      let sender = req.body.sender;   
+
+      db.collection('Tour Package Bookings').doc(tour_package).collection('customers').add({
+            name:name,
+            mobile:mobile
+          }).then(success => {             
+             ThankYouEagle(sender);    
+          }).catch(error => {
+            console.log(error);
+      });        
+});
+
+app.get('/privatetour/:sender_id',function(req,res){    
+    const sender_id = req.params.sender_id;
+    res.render('privatetour.ejs',{title:"Create Your Own Private Tour", sender_id:sender_id});
+});
+
+
+app.post('/privatetour',function(req,res){
+      
+      let destination= req.body.destination;
+      let activities = req.body.activities;
+      let guests = req.body.guests;
+      let travel_mode = req.body.travel_mode;
+      let travel_option = req.body.travel_option;
+      let hotel = req.body.hotel;
+      let restaurent= req.body.restaurent;
+      let name  = req.body.name;
+      let mobile = req.body.mobile;
+      let sender = req.body.sender;   
+
+      db.collection('Private Tour Bookings').add({
+            destination:destination,
+            activities:activities,
+            guests:guests,
+            travel_mode:travel_mode,
+            travel_option:travel_option,
+            hotel:hotel,
+            restaurent:restaurent,            
+            name:name,
+            mobile:mobile
+          }).then(success => {             
+             ThankYouEagle(sender);    
+          }).catch(error => {
+            console.log(error);
+      });        
+});
+
+
+/*********************************************
+END Eye of Eagle
+**********************************************/
+
+
+
 
 //webview test
 app.get('/webview/:sender_id',function(req,res){
@@ -108,9 +213,9 @@ app.post('/webview',upload.single('file'),function(req,res){
       let img_url = APP_URL + "/" + req.file.path;
       let sender = req.body.sender;    
 
-      // bucket.upload(img_url, function(err, file, apiResponse) {
-      //     console.log("UPLOADED TO BUCKET");
-      // }); 
+      bucket.upload(img_url, function(err, file, apiResponse) {
+          console.log("UPLOADED TO BUCKET");
+      }); 
 
       /*
       bucket.upload(img_url).then(data => {
@@ -204,9 +309,29 @@ Function to Handle when user send text message
 const handleMessage = (sender_psid, received_message) => {
   //let message;
   let response;
+
+  if(bot_q.askHotel && received_message.text){
+        user_input.hotel = received_message.text;
+        bot_q.askHotel = false;
+        console.log('USER ENTER HOTEL');
+        askPhone(sender_psid);
+      }
+
+  else    if(bot_q.askRestaurent && received_message.text){
+        user_input.restaurent = received_message.text;
+        bot_q.askRestaurent = false;
+        askPhone(sender_psid);
+      }
+
+  else    if(bot_q.askPhone && received_message.text){
+        user_input.phone = received_message.text;
+        bot_q.askPhone = false;
+        console.log('USER ENTER PHONE');
+        updatePrivateTour(sender_psid, user_input.phone);
+      }
   
   
-  if(received_message.attachments){
+  else if(received_message.attachments){
     let attachment_url = received_message.attachments[0].payload.url;
     response = {
       "attachment": {
@@ -235,7 +360,10 @@ const handleMessage = (sender_psid, received_message) => {
     }
     callSend(sender_psid, response);
   } else {
-      let user_message = received_message.text.toLowerCase();
+      let user_message = received_message.text.toLowerCase();   
+      
+      
+
       switch(user_message) {        
         case "text":
             textReply(sender_psid);
@@ -248,13 +376,244 @@ const handleMessage = (sender_psid, received_message) => {
           break;
         case "webview":
             webviewTest(sender_psid);
-          break;        
+          break; 
+        case "eagle":
+            eyeofEagle(sender_psid); 
+            break;
+        case "admin":
+            adminCreatePackage(sender_psid); 
+            break; 
+        case "customer":
+            selectMode(sender_psid); 
+            break; 
+        case "tour packages":
+          showTourPackages(sender_psid); 
+          break;  
+        case "private tour":
+          privateTour(sender_psid); 
+          break; 
+        case "amend tour":
+          amendTour(sender_psid); 
+          break; 
+        case "change hotel":
+          askHotel(sender_psid); 
+          break;
+        case "change restaurent":
+          askRestaurent(sender_psid); 
+          break;
         default:
             defaultReply(sender_psid);
         }
     }
 
 }
+
+/*********************************************
+START Eye of Eagle
+**********************************************/
+
+const eyeofEagle = (sender_psid) => { 
+    let response = {
+    "text": `Are you "admin" or "customer"?`,    
+    };
+    callSend(sender_psid, response); 
+}
+
+
+const amendTour = (sender_psid) => { 
+    let response = {
+    "text": `Do you want to change hotel or restaurent?`,    
+    };
+    callSend(sender_psid, response); 
+}
+
+const askHotel = (sender_psid) => {  
+  bot_q.askHotel = true;  
+  let response = {
+    "text": `Enter name of the hotel you want to stay`,    
+    };
+    callSend(sender_psid, response); 
+}
+
+
+const askRestaurent = (sender_psid) => {
+  bot_q.askRestaurent = true;
+  let response = {
+    "text": `Enter name of the restaurent you want to go`,    
+    };
+    callSend(sender_psid, response); 
+}
+
+const askPhone = (sender_psid) => {  
+  bot_q.askPhone = true;
+ 
+  let response = {
+    "text": `Please enter your mobile number which you used before`,    
+    };
+    callSend(sender_psid, response); 
+}
+
+const updatePrivateTour = (sender_psid, phone, field) =>{
+  
+  let query =  db.collection('Private Tour Bookings').where('mobile', '==', phone).limit(1).get()
+  .then(snapshot => {
+    if (snapshot.empty) {
+      console.log('No matching documents.');
+      let response = {
+        "text": `No users with that phone number`,    
+      };
+      callSend(sender_psid, response);
+      return;
+    } 
+
+    const booking = snapshot.docs[0];
+
+
+    
+    if(user_input.hotel){
+       booking.ref.update({hotel:user_input.hotel});
+    }
+
+    if(user_input.restaurent){
+      booking.ref.update({restaurent:user_input.restaurent});
+    }
+    
+    
+
+
+  })
+  .catch(err => {
+    console.log('Error getting documents', err);
+  });
+
+
+  
+  ThankYouEagle(sender_psid);    
+}
+
+
+const selectMode = (sender_psid) => { 
+    let response1 = {"text": "Do you want to see our tour packages?, (type 'tour packages')"};
+    let response2 = {"text": "Do you want to create your own custom private tour? (type 'private tour')"};
+    let response3 = {"text": "Do you want to amend your private tour (type 'amend tour')"};   
+    let response4 = {"text": "todo"};
+      callSend(sender_psid, response1).then(()=>{
+        return callSend(sender_psid, response2).then(()=>{
+          return callSend(sender_psid, response3).then(()=>{
+            return callSend(sender_psid, response4);
+          });
+        });
+    });     
+}
+
+
+const showTourPackages =(sender_psid) => {  
+
+  db.collection('package').get()
+  .then((snapshot) => {
+    let elementItems = [];
+
+    snapshot.forEach((doc) => {
+      var obj = {};
+      //obj._id  = doc.id ;        
+      obj.title = doc.data().title;               
+      
+       
+      obj.image_url = doc.data().image;
+      obj.buttons = [{"type":"web_url", "title":"BOOK NOW", "url":"https://fbstarterbot.herokuapp.com/booktour/" + obj.title+"/"+sender_psid, "webview_height_ratio": "full", "messenger_extensions": true}];   
+
+      elementItems.push(obj);
+     
+    });
+
+  let response = {
+            "attachment": {
+              "type": "template",
+              "payload": {
+                "template_type": "generic",
+                "image_aspect_ratio": "square",
+                "elements": elementItems
+              }
+            }
+          }
+
+    console.log("RESPONSE", response);
+    console.log("SENDER",sender_psid,);
+    callSend(sender_psid, response);
+  })
+  .catch((err) => {
+    console.log('Error getting documents', err);
+  });
+ 
+}
+
+function adminCreatePackage(sender_psid){
+  let response;
+  response = {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Create a tour package",                       
+            "buttons": [              
+              {
+                "type": "web_url",
+                "title": "create",
+                "url":"https://fbstarterbot.herokuapp.com/addpackage/"+sender_psid,
+                 "webview_height_ratio": "full",
+                "messenger_extensions": true,          
+              },
+              
+            ],
+          }]
+        }
+      }
+    }
+  callSendAPI(sender_psid, response);
+}
+
+
+function privateTour(sender_psid){
+  let response;
+  response = {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": [{
+            "title": "Create your private tour",                       
+            "buttons": [              
+              {
+                "type": "web_url",
+                "title": "Create",
+                "url":"https://fbstarterbot.herokuapp.com/privatetour/"+sender_psid,
+                 "webview_height_ratio": "full",
+                "messenger_extensions": true,          
+              },
+              
+            ],
+          }]
+        }
+      }
+    }
+  callSendAPI(sender_psid, response);
+}
+
+const ThankYouEagle = (sender_psid) => { 
+    let response = {
+    "text": `Your data is saved`,    
+    };
+    callSend(sender_psid, response); 
+}
+
+/*********************************************
+END Eye of Eagle
+**********************************************/
+
+
+
+
 
 /*********************************************
 Function to handle when user click button
@@ -287,7 +646,7 @@ function webviewTest(sender_psid){
               {
                 "type": "web_url",
                 "title": "webview",
-                "url":"https://myfoodiebot.herokuapp.com/webview/"+sender_psid,
+                "url":"https://fbstarterbot.herokuapp.com/webview/"+sender_psid,
                  "webview_height_ratio": "full",
                 "messenger_extensions": true,          
               },
@@ -554,7 +913,7 @@ FUNCTION TO ADD WHITELIST DOMAIN
 const whitelistDomains = (res) => {
   var messageData = {
           "whitelisted_domains": [
-             "https://myfoodiebot.herokuapp.com" , 
+             "https://dashboard.heroku.com/apps/myfoodiebot" , 
              "https://herokuapp.com"                           
           ]               
   };  
