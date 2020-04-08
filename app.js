@@ -520,7 +520,7 @@ const showTourPackages =(sender_psid) => {
       
        
       obj.image_url = doc.data().image;
-      obj.buttons = [{"type":"web_url", "title":"BOOK NOW", "url":"https://fbstarterbot.herokuapp.com/booktour/" + obj.title+"/"+sender_psid, "webview_height_ratio": "full", "messenger_extensions": true}];   
+      obj.buttons = [{"type":"web_url", "title":"BOOK NOW", "url":"https://myfoodiebot.herokuapp.com/booktour/" + obj.title+"/"+sender_psid, "webview_height_ratio": "full", "messenger_extensions": true}];   
 
       elementItems.push(obj);
      
@@ -560,7 +560,7 @@ function adminCreatePackage(sender_psid){
               {
                 "type": "web_url",
                 "title": "create",
-                "url":"https://fbstarterbot.herokuapp.com/addpackage/"+sender_psid,
+                "url":"https://myfoodiebot.herokuapp.com/addpackage/"+sender_psid,
                  "webview_height_ratio": "full",
                 "messenger_extensions": true,          
               },
@@ -587,7 +587,7 @@ function privateTour(sender_psid){
               {
                 "type": "web_url",
                 "title": "Create",
-                "url":"https://fbstarterbot.herokuapp.com/privatetour/"+sender_psid,
+                "url":"https://myfoodiebot.herokuapp.com/privatetour/"+sender_psid,
                  "webview_height_ratio": "full",
                 "messenger_extensions": true,          
               },
@@ -646,7 +646,7 @@ function webviewTest(sender_psid){
               {
                 "type": "web_url",
                 "title": "webview",
-                "url":"https://fbstarterbot.herokuapp.com/webview/"+sender_psid,
+                "url":"https://myfoodiebot.herokuapp.com/webview/"+sender_psid,
                  "webview_height_ratio": "full",
                 "messenger_extensions": true,          
               },
