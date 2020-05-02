@@ -379,25 +379,25 @@ app.post('/webview',upload.single('file'),function(req,res){
 });
 
 //Set up Get Started Button. To run one time
-//eg https://fbstarter.herokuapp.com/setgsbutton
+//eg https://myfoodiebot.herokuapp.com/setgsbutton
 app.get('/setgsbutton',function(req,res){
   setupGetStartedButton(res);    
 });
 
 //Set up Persistent Menu. To run one time
-//eg https://fbstarter.herokuapp.com/setpersistentmenu
+//eg https://myfoodiebot.herokuapp.com/setpersistentmenu
 app.get('/setpersistentmenu',function(req,res){
   setupPersistentMenu(res);    
 });
 
 //Remove Get Started and Persistent Menu. To run one time
-//eg https://fbstarter.herokuapp.com/clear
+//eg https://myfoodiebot.herokuapp.com/clear
 app.get('/clear',function(req,res){    
   removePersistentMenu(res);
 });
 
 //whitelist domains
-//eg https://fbstarter.herokuapp.com/whitelists
+//eg https://myfoodiebot.herokuapp.com/whitelists
 app.get('/whitelists',function(req,res){    
   whitelistDomains(res);
 });
@@ -629,7 +629,7 @@ response = {
             {
               "type": "web_url",
               "title": "create",
-              "url":"https://fbstarter.herokuapp.com/addpackage/"+sender_psid,
+              "url":"https://myfoodiebot.herokuapp.com/addpackage/"+sender_psid,
                "webview_height_ratio": "full",
               "messenger_extensions": true,          
             },
@@ -654,7 +654,7 @@ db.collection('package').get()
     //obj._id  = doc.id ;        
     obj.title = doc.data().title;       
     obj.image_url = doc.data().image;      
-    obj.buttons = [{"type":"web_url", "title":"BOOK NOW", "url":"https://fbstarter.herokuapp.com/booktour/"+doc.data().sku+"/"+sender_psid, "webview_height_ratio": "full", "messenger_extensions": true,}]; 
+    obj.buttons = [{"type":"web_url", "title":"BOOK NOW", "url":"https://myfoodiebot.herokuapp.com/booktour/"+doc.data().sku+"/"+sender_psid, "webview_height_ratio": "full", "messenger_extensions": true,}]; 
     elementItems.push(obj);     
   });
 
@@ -691,7 +691,7 @@ response = {
             {
               "type": "web_url",
               "title": "create",
-              "url":"https://fbstarter.herokuapp.com/privatetour/"+sender_psid,
+              "url":"https://myfoodiebot.herokuapp.com/privatetour/"+sender_psid,
                "webview_height_ratio": "full",
               "messenger_extensions": true,          
             },
@@ -717,7 +717,7 @@ response = {
             {
               "type": "web_url",
               "title": "Update",
-              "url":"https://fbstarter.herokuapp.com/updateprivatetour/"+ref_num+"/"+sender_psid,
+              "url":"https://myfoodiebot.herokuapp.com/updateprivatetour/"+ref_num+"/"+sender_psid,
                "webview_height_ratio": "full",
               "messenger_extensions": true,          
             },
@@ -1060,7 +1060,7 @@ response = {
             {
               "type": "web_url",
               "title": "enter",
-              "url":"https://fbstarter.herokuapp.com/showimages/"+sender_psid,
+              "url":"https://myfoodiebot.herokuapp.com/showimages/"+sender_psid,
                "webview_height_ratio": "full",
               "messenger_extensions": true,          
             },
@@ -1096,7 +1096,7 @@ response = {
             {
               "type": "web_url",
               "title": "webview",
-              "url":"https://fbstarter.herokuapp.com/webview/"+sender_psid,
+              "url":"https://myfoodiebot.herokuapp.com/webview/"+sender_psid,
                "webview_height_ratio": "full",
               "messenger_extensions": true,          
             },
@@ -1369,7 +1369,7 @@ FUNCTION TO ADD WHITELIST DOMAIN
 const whitelistDomains = (res) => {
 var messageData = {
         "whitelisted_domains": [
-           "https://fbstarter.herokuapp.com" , 
+           "https://myfoodiebot.herokuapp.com" , 
            "https://herokuapp.com"                           
         ]               
 };  
